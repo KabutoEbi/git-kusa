@@ -17,7 +17,13 @@ enum ContributionError: LocalizedError {
 }
 
 enum GitHubContributionService {
+    static func normalizedUsername(_ username: String) -> String {
+        let trimmed = username.trimmingCharacters(in: .whitespacesAndNewlines)
+        return trimmed.hasPrefix("@") ? String(trimmed.dropFirst()) : trimmed
+    }
+
     static func fetch(username: String) async throws -> ContributionSnapshot {
+        let username = normalizedUsername(username)
         let allowed = CharacterSet(charactersIn: "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-")
         let year = Calendar.current.component(.year, from: Date())
         let dayFormatter = DateFormatter()
@@ -26,13 +32,23 @@ enum GitHubContributionService {
         dayFormatter.dateFormat = "yyyy-MM-dd"
         let today = dayFormatter.string(from: Date())
         guard !username.isEmpty, username.rangeOfCharacter(from: allowed.inverted) == nil,
-              let url = URL(string: "https://github.com/users/\(username)/contributions?from=\(year)-01-01&to=\(today)") else {
+              var components = URLComponents(string: "https://github.com/users/\(username)/contributions") else {
             throw ContributionError.invalidUsername
         }
+        components.queryItems = [
+            URLQueryItem(name: "from", value: "\(year)-01-01"),
+            URLQueryItem(name: "to", value: today),
+            URLQueryItem(name: "_", value: String(Int(Date().timeIntervalSince1970)))
+        ]
+        guard let url = components.url else { throw ContributionError.invalidUsername }
 
-        var request = URLRequest(url: url)
+        var request = URLRequest(
+            url: url,
+            cachePolicy: .reloadIgnoringLocalCacheData,
+            timeoutInterval: 15
+        )
         request.setValue("GitKusa/1.0", forHTTPHeaderField: "User-Agent")
-        request.timeoutInterval = 15
+        request.setValue("no-cache", forHTTPHeaderField: "Cache-Control")
         let (data, response) = try await URLSession.shared.data(for: request)
         guard let http = response as? HTTPURLResponse else { throw ContributionError.invalidResponse }
         if http.statusCode == 404 { throw ContributionError.notFound }

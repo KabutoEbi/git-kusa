@@ -1,6 +1,8 @@
 import SwiftUI
+import WidgetKit
 
 struct ContentView: View {
+    @Environment(\.scenePhase) private var scenePhase
     @State private var username = ""
     @State private var days: [ContributionDay] = ContributionDay.preview
     @State private var status = "ウィジェットを追加してユーザー名を設定してください"
@@ -44,10 +46,15 @@ struct ContentView: View {
         }
         .padding(24)
         .frame(width: 520)
+        .onChange(of: scenePhase) { _, newPhase in
+            if newPhase == .active {
+                WidgetCenter.shared.reloadTimelines(ofKind: "GitKusaWidget")
+            }
+        }
     }
 
     private func loadPreview() {
-        let name = username.trimmingCharacters(in: .whitespacesAndNewlines)
+        let name = GitHubContributionService.normalizedUsername(username)
         guard !name.isEmpty else { return }
         isLoading = true
         status = "@\(name) のデータを取得しています…"
@@ -58,6 +65,7 @@ struct ContentView: View {
                     days = fetched.days
                     status = "@\(name)・\(fetched.year)年 \(fetched.totalCount) contributions"
                     isLoading = false
+                    WidgetCenter.shared.reloadTimelines(ofKind: "GitKusaWidget")
                 }
             } catch {
                 await MainActor.run {

@@ -30,12 +30,12 @@ struct KusaProvider: AppIntentTimelineProvider {
 
     func timeline(for configuration: KusaConfigurationIntent, in context: Context) async -> Timeline<KusaEntry> {
         let result = await entry(for: configuration)
-        let refresh = Calendar.current.date(byAdding: .hour, value: 2, to: .now) ?? .now.addingTimeInterval(7200)
+        let refresh = Calendar.current.date(byAdding: .hour, value: 1, to: .now) ?? .now.addingTimeInterval(3600)
         return Timeline(entries: [result], policy: .after(refresh))
     }
 
     private func entry(for configuration: KusaConfigurationIntent) async -> KusaEntry {
-        let username = configuration.username.trimmingCharacters(in: .whitespacesAndNewlines)
+        let username = GitHubContributionService.normalizedUsername(configuration.username)
         do {
             let snapshot = try await GitHubContributionService.fetch(username: username)
             return KusaEntry(date: .now, username: username, days: snapshot.days, totalCount: snapshot.totalCount, year: snapshot.year, errorMessage: nil)
