@@ -35,7 +35,7 @@ struct KusaProvider: AppIntentTimelineProvider {
     }
 
     private func entry(for configuration: KusaConfigurationIntent) async -> KusaEntry {
-        let username = configuration.username.trimmingCharacters(in: .whitespacesAndNewlines)
+        let username = GitHubContributionService.normalizedUsername(configuration.username)
         do {
             let snapshot = try await GitHubContributionService.fetch(username: username)
             return KusaEntry(date: .now, username: username, days: snapshot.days, totalCount: snapshot.totalCount, year: snapshot.year, errorMessage: nil)
