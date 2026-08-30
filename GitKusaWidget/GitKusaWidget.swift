@@ -30,7 +30,7 @@ struct KusaProvider: AppIntentTimelineProvider {
 
     func timeline(for configuration: KusaConfigurationIntent, in context: Context) async -> Timeline<KusaEntry> {
         let result = await entry(for: configuration)
-        let refresh = Calendar.current.date(byAdding: .hour, value: 2, to: .now) ?? .now.addingTimeInterval(7200)
+        let refresh = Calendar.current.date(byAdding: .hour, value: 1, to: .now) ?? .now.addingTimeInterval(3600)
         return Timeline(entries: [result], policy: .after(refresh))
     }
 
