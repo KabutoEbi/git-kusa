@@ -1,4 +1,5 @@
 import SwiftUI
+import WidgetKit
 
 struct ContentView: View {
     @State private var username = ""
@@ -58,6 +59,7 @@ struct ContentView: View {
                     days = fetched.days
                     status = "@\(name)・\(fetched.year)年 \(fetched.totalCount) contributions"
                     isLoading = false
+                    WidgetCenter.shared.reloadTimelines(ofKind: "GitKusaWidget")
                 }
             } catch {
                 await MainActor.run {

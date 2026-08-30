@@ -30,9 +30,13 @@ enum GitHubContributionService {
             throw ContributionError.invalidUsername
         }
 
-        var request = URLRequest(url: url)
+        var request = URLRequest(
+            url: url,
+            cachePolicy: .reloadIgnoringLocalCacheData,
+            timeoutInterval: 15
+        )
         request.setValue("GitKusa/1.0", forHTTPHeaderField: "User-Agent")
-        request.timeoutInterval = 15
+        request.setValue("no-cache", forHTTPHeaderField: "Cache-Control")
         let (data, response) = try await URLSession.shared.data(for: request)
         guard let http = response as? HTTPURLResponse else { throw ContributionError.invalidResponse }
         if http.statusCode == 404 { throw ContributionError.notFound }
