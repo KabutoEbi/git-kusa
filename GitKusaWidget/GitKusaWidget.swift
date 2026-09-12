@@ -50,18 +50,16 @@ struct KusaWidgetView: View {
     @Environment(\.widgetFamily) private var family
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
+        VStack(alignment: .leading, spacing: 4) {
             Text("@\(entry.username)")
                 .font(.headline)
-            Spacer(minLength: 0)
             ContributionGrid(
                 days: entry.days,
                 columns: family == .systemMedium ? 26 : 14,
-                cellSize: family == .systemMedium ? 8 : 7,
-                spacing: 2
+                cellSize: family == .systemMedium ? 11 : 9,
+                spacing: 1
             )
             .frame(maxWidth: .infinity, alignment: .center)
-            Spacer(minLength: 0)
             if let message = entry.errorMessage {
                 Text(message).font(.caption2).foregroundStyle(.secondary).lineLimit(1)
             } else {
@@ -69,6 +67,8 @@ struct KusaWidgetView: View {
                     .font(.caption2).foregroundStyle(.secondary)
             }
         }
+        .padding(.horizontal, 16)
+        .padding(.vertical, 8)
         .containerBackground(.background, for: .widget)
     }
 }
@@ -84,5 +84,6 @@ struct GitKusaWidget: Widget {
         .configurationDisplayName("Git Kusa")
         .description("GitHubの草をデスクトップに表示します。")
         .supportedFamilies([.systemSmall, .systemMedium])
+        .contentMarginsDisabled()
     }
 }
